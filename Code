@@ -1,0 +1,50 @@
+
+library(shiny)
+library(ggplot2)
+
+ui <- fluidPage(
+    titlePanel("Histogram for Random Data"),
+    # Sidebar with a slider input for number of bins 
+    sidebarLayout(
+        sidebarPanel(
+            sliderInput("bins","Number of bins:",min = 1,max = 50,value = 20),
+            sliderInput('n',"sample size", min = 20, max = 2000, value = 50),
+            selectInput('col',"Select color", choices = c('red','green','blue','yellow')),
+            selectInput("Name", "Select distribution", choices = c('Normal','Exp','Uniform'))
+        ),
+        mainPanel(
+            plotOutput("distPlot"),
+            plotOutput("ggplot")
+        )
+    )
+)
+
+
+server <- function(input, output) {
+    output$distPlot <- renderPlot({
+        if(input$Name == 'Normal'){
+            x = rnorm(input$n)
+        }else if(input$Name=='Exp'){
+            x = rexp(input$n)
+        }else{
+            x = runif(input$n)
+        }
+        bins <- seq(min(x), max(x), length.out = input$bins + 1)
+        hist(x, breaks = bins, col = input$col, border = 'white')
+    })
+    output$ggplot <- renderPlot({
+        if(input$Name == 'Normal'){
+            x = rnorm(input$n)
+        }else if(input$Name=='Exp'){
+            x = rexp(input$n)
+        }else{
+            x = runif(input$n)
+        }
+        qplot(x, geom="density", main="Distribution Plot", xlab="X", 
+              ylab="Density") +
+            geom_density(color='darkblue', fill=input$col)
+    }
+    )
+}
+
+shinyApp(ui = ui, server = server)
